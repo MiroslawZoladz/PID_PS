@@ -1,0 +1,131 @@
+#include "PL_to_PC.h"
+#include "initialization.h"
+#include <string.h>
+#include "xtime_l.h"
+#include "config.h"
+#include "xaxidma.h"
+#include "lwip/tcp.h"
+
+extern struct tcp_pcb *pcb;
+extern XAxiDma AxiDma;
+
+volatile u32 RxBytesCtr;
+volatile u32 TxBytesCtr;
+
+volatile u32 TransferLength;
+
+volatile u32 debug_uint;
+volatile u32 debug_flag;
+
+circullar_buffer *circ_buff;
+
+/*###### DMA ######*/
+
+int SetAxiDmaTransferFromPL(circullar_buffer *cb) {//(u8 * pointer, u32 length{
+
+//	xil_printf("RXPTR1: %p \n\r", cb->rx_ptr);
+//	xil_printf("BUFFTOP: %p \n\r", cb->buffer_top);
+	if((cb->buffer_top - cb->rx_ptr) < PACKET_SIZE) {
+		xil_printf("end_of_buffer!\n\r");
+		cb->buffer_top = cb->rx_ptr;
+		cb->rx_ptr = cb->buffer;
+	}
+
+//	Xil_DCacheFlushRange((UINTPTR)cb->rx_ptr, PACKET_SIZE);
+
+//	xil_printf("RXPTR: %p \n\r", cb->rx_ptr);
+
+	int Status = XAxiDma_SimpleTransfer(&AxiDma, (UINTPTR) cb->rx_ptr,
+										PACKET_SIZE, XAXIDMA_DEVICE_TO_DMA);
+
+	if (Status != XST_SUCCESS)
+	{
+		 xil_printf("Error\r\n");
+	}
+	else
+	{
+//		 xil_printf("Success\r\n");
+	}
+	return Status;
+}
+
+int PL2PC_DMA_Setup(XScuGic * IntcInstancePtr)
+{
+	int Status;
+	XScuGic_SetPriorityTriggerType(IntcInstancePtr, RX_INTR_ID, 0xA0, 0x3);
+	Status = XScuGic_Connect(IntcInstancePtr, RX_INTR_ID, (Xil_InterruptHandler)OnDmaRx, &AxiDma);
+	if (Status != XST_SUCCESS) return Status;
+	XScuGic_Enable(IntcInstancePtr, RX_INTR_ID);
+	return XST_SUCCESS;
+}
+
+void PL2PC_start(u32 TransferLength_) {
+//	xil_printf("start\n\r");
+	TransferLength = TransferLength_;
+
+	RxBytesCtr = 0;
+	TxBytesCtr = 0;
+
+	debug_uint = 0;
+	debug_flag = 0;
+
+	Xil_DCacheFlushRange((UINTPTR)circ_buff->rx_ptr, TransferLength_);	// What does it do exactly?
+	SetAxiDmaTransferFromPL(circ_buff);
+    //XAxiDma_SimpleTransfer(&AxiDma,(UINTPTR) TX_BUFFER_BASE,PACKET_SIZE, XAXIDMA_DEVICE_TO_DMA);//TODO
+}
+
+void OnDmaRx(void *Callback){
+	XAxiDma *AxiDmaInst = (XAxiDma *)Callback;
+	u32 IrqStatus = XAxiDma_IntrGetIrq(AxiDmaInst, XAXIDMA_DEVICE_TO_DMA);
+	XAxiDma_IntrAckIrq(AxiDmaInst, IrqStatus, XAXIDMA_DEVICE_TO_DMA);
+
+	u32 packet_size = XAxiDma_ReadReg(XPAR_AXIDMA_0_BASEADDR, 0x58);
+	RxBytesCtr += packet_size;
+
+	circ_buff->rx_ptr += packet_size;
+
+	debug_uint = packet_size;
+	debug_flag = 1;
+
+	if (RxBytesCtr < TransferLength) {
+		SetAxiDmaTransferFromPL(circ_buff);
+//		XAxiDma_SimpleTransfer(&AxiDma,(UINTPTR) (TX_BUFFER_BASE+RxBytesCtr),PACKET_SIZE, XAXIDMA_DEVICE_TO_DMA);
+	} else {
+//		xil_printf("end\n\r");
+	}
+
+}
+
+void PL2PC_Tick(){
+
+	if (debug_flag){
+		xil_printf("%d \n\r", debug_uint);
+		debug_flag=0;
+	}
+
+	u32 TcpBuffSize = tcp_sndbuf(pcb);
+	if (TcpBuffSize > 0) {
+		u32 NrOfBytesToTransmit  = RxBytesCtr-TxBytesCtr;
+		if (NrOfBytesToTransmit>0){
+			if (NrOfBytesToTransmit > TcpBuffSize) NrOfBytesToTransmit = TcpBuffSize;
+
+			if((circ_buff->buffer_top - circ_buff->tx_ptr) < NrOfBytesToTransmit) {
+				NrOfBytesToTransmit = circ_buff->buffer_top - circ_buff->tx_ptr;
+				tcp_write(pcb, circ_buff->tx_ptr, NrOfBytesToTransmit, 1);
+				circ_buff->buffer_top = (u8 *)CIRC_BUFFER_HIGH; //reset to full buffer size
+				circ_buff->tx_ptr = circ_buff->buffer;
+
+				debug_flag = 1;
+				debug_uint = circ_buff->buffer_top;
+			} else {
+				tcp_write(pcb, circ_buff->tx_ptr, NrOfBytesToTransmit, 1);
+				circ_buff->tx_ptr += NrOfBytesToTransmit;
+			}
+			tcp_output(pcb);
+			TxBytesCtr += NrOfBytesToTransmit;
+		}
+	}
+}
+
+
+

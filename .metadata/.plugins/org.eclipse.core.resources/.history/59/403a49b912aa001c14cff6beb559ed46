@@ -1,0 +1,24 @@
+#ifndef __PL_TO_PC_H_
+#define __PL_TO_PC_H_
+
+#include "xil_types.h"
+#include "xscugic.h"
+
+#include "lwip/tcp.h"
+
+//#define PACKET_SIZE		0x3FFFFFE	//(2000000+2)	// 0x3FFFFFF = 64MB
+#define PACKET_SIZE		 0xFFFFF //1MB; 8b:0xFFFFF, 32b:0xFFFFE
+
+
+int 	PL2PC_DMA_Setup(XScuGic * IntcInstancePtr);
+void 	PL2PC_start(u32 TransferLength);
+void 	OnDmaRx(void *Callback);
+
+void    Tcp_SendDataChunk();
+err_t   OnTcpTx(void *arg, struct tcp_pcb *tpcb, u16_t tcp_acknowledged_length);
+
+void PL2PC_Tick();
+
+void 	Transmitter_Buffer_Write(u8 * pointer, u32 length);
+
+#endif

@@ -1,0 +1,60 @@
+#include "PL_to_PC.h"
+#include "PC_to_PL.h"
+#include "initialization.h"
+#include "config.h"
+
+static XScuGic Gic;
+
+void enable_interrupts() {
+	Xil_ExceptionEnableMask(XIL_EXCEPTION_IRQ);
+	TcpInterface_EnableInterrupt();
+	DmaTransfer_EnableInterrupt();
+
+}
+
+int init() {
+	int Status;
+
+	TcpInterface_SetupTimer();
+
+	XScuGic_Config *IntcConfig;
+
+	IntcConfig = XScuGic_LookupConfig(INTC_DEVICE_ID);
+	if (NULL == IntcConfig) {
+		return XST_FAILURE;
+	}
+
+	Status = XScuGic_CfgInitialize(&Gic, IntcConfig,
+					IntcConfig->CpuBaseAddress);
+	if (Status != XST_SUCCESS) {
+		return XST_FAILURE;
+	}
+
+	TcpInterface_SetupInterrupt();
+
+	//Dma_SetupInterrupt_Tx(&Gic);
+	PL2PC_DMA_Setup(&Gic);
+
+	Xil_ExceptionInit();
+	Xil_ExceptionRegisterHandler(XIL_EXCEPTION_ID_INT,
+			(Xil_ExceptionHandler)XScuGic_InterruptHandler,
+			(void *)&Gic);
+
+	Xil_ExceptionEnable();
+
+	return XST_SUCCESS;
+}
+
+int main(void) {
+	init();
+	UART_Init_9600();
+	TcpInterface_Init();
+	DataTransfer_Init();
+	enable_interrupts();
+	TcpInterface_Start();
+	while (1) {
+		TcpInterface_Tick();
+		PL2PC_Tick();
+	}
+	return 0;
+}

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<item value="Local" key="Hardware-target"/>
+	<item value="Hardware" key="programflash.hwplatform"/>
+	<item value="false" key="Hardware-verifyFlash"/>
+	<item value="C:\TMP\PS\SD\bootimage\BOOT.bin" key="Hardware-imgFile"/>
+	<item value="false" key="Hardware-blankCheck"/>
+	<item value="" key="Hardware-offSet"/>
+	<item value="Auto Detect" key="Hardware-device"/>
+	<item value="C:\TMP\PS\SD\Debug\SD.elf" key="Hardware-fsblFile"/>
+	<item value="qspi-x4-single" key="Hardware-flashType"/>
+</section>

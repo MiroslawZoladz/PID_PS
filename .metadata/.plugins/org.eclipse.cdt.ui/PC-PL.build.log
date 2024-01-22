@@ -1,0 +1,7 @@
+09:50:36 **** Clean-only build of configuration Debug for project PC-PL ****
+make clean 
+rm -rf  ./src/PC_to_PL.o ./src/PL_to_PC.o ./src/initialization.o ./src/main.o  ./src/PC_to_PL.d ./src/PL_to_PC.d ./src/initialization.d ./src/main.d  PC-PL.elf.size  PC-PL.elf
+' '
+
+09:50:36 Build Finished (took 170ms)
+

@@ -1,0 +1,7 @@
+//arch = zynq; split = false; format = BIN
+the_ROM_image:
+{
+	[bootloader]C:\TMP\PID\Zybo\PS\SD\Debug\SD.elf
+	C:\TMP\PID\Zybo\PS\Hardware\design_1_wrapper.bit
+	C:\TMP\PID\Zybo\PS\PC-PL\Debug\PC-PL.elf
+}

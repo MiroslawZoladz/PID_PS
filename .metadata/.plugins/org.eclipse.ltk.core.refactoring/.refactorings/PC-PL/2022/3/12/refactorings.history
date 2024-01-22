@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">&#x0A;<refactoring comment="Rename resource &apos;PC-PL/src/xemac&apos; to &apos;xemacpsif_physpeed&apos;" description="Rename resource &apos;xemac&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/xemac" name="xemacpsif_physpeed" stamp="1647975869896" updateReferences="true"/>&#x0A;<refactoring comment="Rename resource &apos;PC-PL/src/xemacpsif_physpeed&apos; to &apos;xemacpsif_physpeed.txt&apos;" description="Rename resource &apos;xemacpsif_physpeed&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/xemacpsif_physpeed" name="xemacpsif_physpeed.txt" stamp="1647975878500" updateReferences="true"/>
+</session>

@@ -1,0 +1,5 @@
+09:50:10 INFO  : Registering command handlers for SDK TCF services
+09:50:11 INFO  : Launching XSCT server: xsct.bat -interactive C:\TMP\PID\Zybo\PS\temp_xsdb_launch_script.tcl
+09:50:13 INFO  : XSCT server has started successfully.
+09:50:13 INFO  : Successfully done setting XSCT server connection channel  
+09:50:13 INFO  : Successfully done setting SDK workspace  
