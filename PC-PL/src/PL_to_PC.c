@@ -95,12 +95,12 @@ void PL2PC_Tick() {
 
 		if (debug_flag_bool){
 			debug_flag_bool=0;
-			xil_printf("start\n\r");
+			//xil_printf("start\n\r");
 		}
 
 		if (debug_flag_uint){
 			debug_flag_uint=0;
-			xil_printf("%d\n\r",debug_uint);
+			//xil_printf("%d\n\r",debug_uint);
 		}
 
 		/*hard_beet_prescaler++;

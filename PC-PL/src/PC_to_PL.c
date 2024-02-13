@@ -52,9 +52,9 @@ int Receiver_DataManagement(u8 * tcp_packet_ptr, u32 tcp_packet_length) {
 
 	switch(Status){
 	case EMPTY:
-		xil_printf("EMPTY %d\r\n",tcp_packet_length);
+		//xil_printf("EMPTY %d\r\n",tcp_packet_length);
 		if (tcp_packet_length < 12) {
-			xil_printf("RX tcp_packet length invalid \r\n");
+			//xil_printf("RX tcp_packet length invalid \r\n");
 			return XST_FAILURE;
 		}
 		RxPayloadLength  		= BytesTo32uint(tcp_packet_ptr);
@@ -62,7 +62,7 @@ int Receiver_DataManagement(u8 * tcp_packet_ptr, u32 tcp_packet_length) {
 		PLTransmission 	 		= BytesTo32uint(tcp_packet_ptr + 8);
 
 		if ((RxPayloadLength == 0) | (RxPayloadLength > RX_BUFFER_LENGTH)) {// | (PL2PC_TxTransferLength > MAX_TR_SIZE)){
-			xil_printf("RX or TX header length invalid \r\n");
+			//xil_printf("RX or TX header length invalid \r\n");
 			return XST_FAILURE;
 		}
 
@@ -70,14 +70,14 @@ int Receiver_DataManagement(u8 * tcp_packet_ptr, u32 tcp_packet_length) {
 		tmp_length = tcp_packet_length - 12;
 
 	case GET_PAYLOAD:
-		xil_printf("GET_PAYLOAD %d %d %d\r\n",RxPayloadLength, PL2PC_TxTransferLength, PLTransmission);
+		//xil_printf("GET_PAYLOAD %d %d %d\r\n",RxPayloadLength, PL2PC_TxTransferLength, PLTransmission);
 		Status = Buffer_Append(tmp_pointer, tmp_length);
 		if(Status == GET_PAYLOAD) break;
 
 	case DONE:
 		PL2PC_start(); // Arm PL->PS
 		SetAxiDmaTransferToPL(RXBufferPtr, RxPayloadLength);// Trigger PS->PL
-		xil_printf("DONE\r\n");
+		//xil_printf("DONE\r\n");
 		Status = EMPTY;
 		break;
 	}
@@ -89,8 +89,7 @@ int Receiver_DataManagement(u8 * tcp_packet_ptr, u32 tcp_packet_length) {
 int SetAxiDmaTransferToPL(u8 * pointer, u32 length) {
 	Xil_DCacheFlushRange((UINTPTR)pointer, length);
 
-	int Status = XAxiDma_SimpleTransfer(&AxiDma,(UINTPTR)pointer,
-											length, XAXIDMA_DMA_TO_DEVICE);
+	int Status = XAxiDma_SimpleTransfer(&AxiDma,(UINTPTR)pointer, length, XAXIDMA_DMA_TO_DEVICE);
 	// xil_printf("AXI_DMA_arm_TX ");
 	if (Status != XST_SUCCESS)
 	{

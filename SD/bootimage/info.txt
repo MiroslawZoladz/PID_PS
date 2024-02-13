@@ -1,0 +1,1 @@
+24-01-22: Z20-8chip: zwiekszono pamiec sekwencera do 512 zeby obslużyc 3 progi
